@@ -1,8 +1,12 @@
 <!--The content below is only a placeholder and can be replaced.-->
+<p-growl [(value)]="msgs"></p-growl>
 <div style="text-align:center">
   <h1>
     {{title}}!
   </h1>
+<div>
+  <button pButton type="button" (click)="onclick()" class="ui-button-info" label="Click me"></button>
+</div>
 </div>
 
 <router-outlet></router-outlet>

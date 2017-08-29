@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Http } from '@angular/http';
 
+import { Message } from 'primeng/primeng';
+
 @Component({
   selector: 'angles-root',
   templateUrl: './app.component.html',
@@ -9,9 +11,14 @@ import { Http } from '@angular/http';
 export class AppComponent implements OnInit {
 
   title = 'angles';
+  msgs: Message[] = [];
 
   constructor(private http: Http) {
 
+  }
+
+  onclick(): void {
+    this.msgs.push({severity:'info', summary:'Info Message', detail:'PrimeNG rocks'});
   }
 
   ngOnInit(): void {
