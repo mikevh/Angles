@@ -5,7 +5,8 @@
     {{title}}!
   </h1>
 <div>
-  <button pButton type="button" (click)="onclick()" class="ui-button-info" label="Click me"></button>
+  <input type="text" [(ngModel)]="message" />
+  <button [disabled]="message === ''" pButton type="button" (click)="onclick()" class="ui-button-info" label="Send"></button>
 </div>
 </div>
 

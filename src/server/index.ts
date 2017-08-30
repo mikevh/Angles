@@ -1,34 +1,64 @@
 import * as http from 'http';
 
-import App from './App';
+import * as express from 'express';
+import * as bodyParser from 'body-parser';
+import * as io from 'socket.io';
 
-const port = 3000;
-const server = http.createServer(App);
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+import { Message } from './model/Message';
 
-function onError(error: NodeJS.ErrnoException): void {
-    if (error.syscall !== 'listen') {
-        throw error;
-    }
-    let bind = (typeof port === 'string') ? 'Pipe ' + port : 'Port ' + port;
-    switch (error.code) {
-      case 'EACCES':
-        console.error(`${bind} requires elevated privileges`);
-        process.exit(1);
-        break;
-      case 'EADDRINUSE':
-        console.error(`${bind} is already in use`);
-        process.exit(1);
-        break;
-      default:
-        throw error;
-    }
+class Server {
+  static readonly PORT: number = 3000;
+  app: express.Express;
+  port: number;
+  server: any;
+  io: SocketIO.Server;
+
+  public static bootstrap(): Server {
+    return new Server();
   }
 
-function onListening(): void {
-    let addr = server.address();
-    let bind = (typeof addr === 'string') ? `pipe ${addr}` : `port ${addr.port}`;
-    console.log(`Listening on ${bind}`);
+  private routes(): void {
+    let router = express.Router();
+
+    router.get('/api', (req, res, next) => {
+      res.json({
+        message: 'hello world!'
+      });
+    });
+
+    router.post('/api', (req, res, next) => {
+      this.io.emit('message', 'post!');
+      res.status(200).end();
+    });
+
+    this.app.use(router);
+  }
+
+  constructor() {
+    this.app = express();
+    this.routes();
+    this.port = process.env.PORT || Server.PORT;
+    this.server = http.createServer(this.app);
+    this.io = io(this.server);
+
+    this.server.listen(this.port, () => {
+      console.log(`Listening on port ${this.port}`);
+    });
+
+    this.io.on('connect', (socket: SocketIO.Socket) => {
+      console.log(`Connected client on port ${this.port}`);
+      socket.on('message', (m: Message) => {
+        let clients = this.io.clients();
+        console.log(`[server](message): ${socket.client.id}: ${m}`);
+        this.io.emit('message', m);
+      });
+
+      socket.on('disconnect', () => {
+        console.log('client disconnected');
+      });
+    });
+  }
 }
+
+let server = Server.bootstrap();
+export default server.app;
